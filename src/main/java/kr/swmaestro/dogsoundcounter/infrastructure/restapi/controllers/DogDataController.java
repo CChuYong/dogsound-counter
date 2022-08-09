@@ -44,13 +44,20 @@ public class DogDataController {
             if(toUser.isEmpty()) return ApiResponse.error("해당 유저를 찾을 수 없습니다");
             if(fromUser.isEmpty()) return ApiResponse.error("세션이 올바르지 않습니다");
             if(fromUser.get().getId() == toUser.get().getId()) return ApiResponse.error("자기 자신에게 등록할 수 없습니다");
-            final DogSound sound = DogSound.newInstance(toUser.get().toEntity(), fromUser.get().toEntity(), request.getContent(), Instant.now());
+
+            int price = 100;
+            if(request.getContent().contains("자살")) price = 500;
+
+            Random random = new Random();
+            if ( random.nextInt(100) <= 3 ) price=1000;
+
+            final DogSound sound = DogSound.newInstance(toUser.get().toEntity(), fromUser.get().toEntity(), request.getContent(), Instant.now(), price);
             final DogSoundData data = dataRepository.persist(sound);
 
             ObjectNode node = objectMapper.createObjectNode();
             ArrayNode arr = objectMapper.createArrayNode();
             ObjectNode embedNode = objectMapper.createObjectNode();
-            embedNode.put("title",  fromUser.get().getUsername() + " ➡️ "+toUser.get().getUsername());
+            embedNode.put("title",  fromUser.get().getUsername() + " ➡️ "+toUser.get().getUsername() + " ("+price+"원)");
             embedNode.put("description", request.getContent());
             embedNode.put("color", 5814783);
             embedNode.put("timestamp", data.getSpeakAt().toString());
@@ -66,20 +73,20 @@ public class DogDataController {
             //System.out.println(node.toString());
 
             if(data.getId() != null && data.getId() > 0)
-                return ApiResponse.succeed("성공적으로 개소리를 등록했습니다!");
+                return ApiResponse.succeed("성공적으로 "+price+"원짜리 개소리를 등록했습니다!");
             else
                 return ApiResponse.error("알 수 없는 이유로 등록에 실패했습니다");
         });
     }
 
-    @GetMapping
-    CompletableFuture<List<DogSoundResponse>> get(){
+    @GetMapping(value = "/{id}")
+    CompletableFuture<List<DogSoundResponse>> get(@PathVariable("id") long id) {
         final UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
         final String from = token.getName();
         return CompletableFuture.supplyAsync(()->{
             final Optional<UserData> fromUser = repository.findByUsername(from);
             if(fromUser.isEmpty()) return Collections.emptyList();
-            final List<DogSoundData> myDogSounds = dataRepository.findByRelations(fromUser.get());
+            final List<DogSoundData> myDogSounds = dataRepository.findByRelationsGreaterThan(fromUser.get(), id);
             return myDogSounds.stream().map(DogSoundData::toEntity).map(DogSoundMapper::map).toList();
         });
     }
@@ -95,4 +102,30 @@ public class DogDataController {
             return ApiResponse.succeed(Long.toString(count));
         });
     }
+
+    @GetMapping
+    CompletableFuture<List<DogSoundResponse>> get(){
+        final UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        final String from = token.getName();
+        return CompletableFuture.supplyAsync(()->{
+            final Optional<UserData> fromUser = repository.findByUsername(from);
+            if(fromUser.isEmpty()) return Collections.emptyList();
+            final List<DogSoundData> myDogSounds = dataRepository.findByRelations(fromUser.get());
+            return myDogSounds.stream().map(DogSoundData::toEntity).map(DogSoundMapper::map).toList();
+        });
+    }
+
+
+//    @PostMapping(value = "/pay")
+//    CompletableFuture<ApiResponse> pay(){
+//        final UsernamePasswordAuthenticationToken token = (UsernamePasswordAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+//        final String userName = token.getName();
+//        return CompletableFuture.supplyAsync(()->{
+//            final Optional<UserData> user = repository.findByUsername(userName);
+//            if(user.isEmpty()) return ApiResponse.succeed("0");
+//
+//
+//            return ApiResponse.succeed(Long.toString(count));
+//        });
+//    }
 }

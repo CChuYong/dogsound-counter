@@ -11,8 +11,10 @@ public class DogSound {
     private final User victim;
     private final String content;
     private final Instant speakAt;
+    private final boolean paid;
+    private final int price;
 
-    public static DogSound newInstance(User speaker, User victim, String content, Instant speakAt){
-        return new DogSound(Identity.NOTHING, speaker, victim, content, speakAt);
+    public static DogSound newInstance(User speaker, User victim, String content, Instant speakAt, int price){
+        return new DogSound(Identity.NOTHING, speaker, victim, content, speakAt, false, price);
     }
 }

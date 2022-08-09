@@ -36,12 +36,20 @@ public class DogSoundData {
     @Column(name = "speak_at", nullable = false)
     private Instant speakAt;
 
+    @Column(name = "is_paid", nullable = false)
+    private boolean paid;
+
+    @Column(name = "price", nullable = false)
+    private int price;
+
     public static DogSoundData fromEntity(DogSound data){
         return new DogSoundData(data.getIdentity().getId(),
                 UserData.fromEntity(data.getSpeaker()),
                 UserData.fromEntity(data.getVictim()),
                 data.getContent(),
-                data.getSpeakAt());
+                data.getSpeakAt(),
+                data.isPaid(),
+                data.getPrice());
     }
 
     public DogSound toEntity(){
@@ -49,6 +57,8 @@ public class DogSoundData {
                 speaker.toEntity(),
                 victim.toEntity(),
                 content,
-                speakAt);
+                speakAt,
+                paid,
+                price);
     }
 }
