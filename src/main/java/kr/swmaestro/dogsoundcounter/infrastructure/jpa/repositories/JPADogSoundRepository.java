@@ -14,5 +14,5 @@ public interface JPADogSoundRepository extends JpaRepository<DogSoundData, Long>
     Long countBySpeaker(UserData user);
     List<DogSoundData> findAllByVictimAndIdGreaterThan(UserData user, Long id);
     List<DogSoundData> findAllBySpeakerAndIdGreaterThan(UserData user, Long id);
-    List<DogSoundData> findAllByVictimAndIdGreaterThanOrSpeakerAndIdGreaterThan(UserData victim, Long id, UserData speaker, Long id2);
+    List<DogSoundData> findAllByVictimAndIdGreaterThanOrSpeakerAndIdGreaterThanOrderByIdDesc(UserData victim, Long id, UserData speaker, Long id2);
 }
