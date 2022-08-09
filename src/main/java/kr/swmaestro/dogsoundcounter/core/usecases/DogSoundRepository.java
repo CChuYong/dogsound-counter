@@ -12,4 +12,5 @@ public interface DogSoundRepository {
     DogSoundData persist(DogSound user);
     List<DogSoundData> findByRelations(UserData user);
     long countByRelations(UserData user);
+    List<DogSoundData> findByRelationsGreaterThan(UserData user, long id);
 }

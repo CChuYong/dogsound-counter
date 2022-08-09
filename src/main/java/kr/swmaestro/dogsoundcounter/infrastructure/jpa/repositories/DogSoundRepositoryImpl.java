@@ -38,7 +38,16 @@ public class DogSoundRepositoryImpl implements DogSoundRepository {
 
     @Override
     public long countByRelations(UserData user) {
-        return repository.countBySpeaker(user) * (100) + repository.countByVictim(user) * -100;
+        List<DogSoundData> myDogSounds = this.findByRelations(user);
+        return myDogSounds.stream()
+                .filter(x -> !x.isPaid())
+                .map(x -> x.getSpeaker().getId() == user.getId() ? x.getPrice() : -x.getPrice())
+                .reduce(0, Integer::sum);
+    }
+
+    @Override
+    public List<DogSoundData> findByRelationsGreaterThan(UserData user, long id) {
+        return repository.findAllByVictimAndIdGreaterThanOrSpeakerAndIdGreaterThan(user,id, user, id);
     }
 
 }

@@ -12,4 +12,7 @@ public interface JPADogSoundRepository extends JpaRepository<DogSoundData, Long>
     List<DogSoundData> findAllBySpeaker(UserData user);
     Long countByVictim(UserData user);
     Long countBySpeaker(UserData user);
+    List<DogSoundData> findAllByVictimAndIdGreaterThan(UserData user, Long id);
+    List<DogSoundData> findAllBySpeakerAndIdGreaterThan(UserData user, Long id);
+    List<DogSoundData> findAllByVictimAndIdGreaterThanOrSpeakerAndIdGreaterThan(UserData victim, Long id, UserData speaker, Long id2);
 }
