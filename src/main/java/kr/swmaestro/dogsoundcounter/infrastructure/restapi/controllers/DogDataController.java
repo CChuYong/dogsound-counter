@@ -10,6 +10,7 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import kr.swmaestro.dogsoundcounter.core.entities.DogSound;
 import kr.swmaestro.dogsoundcounter.core.usecases.DogSoundRepository;
 import kr.swmaestro.dogsoundcounter.core.usecases.UserRepository;
+import kr.swmaestro.dogsoundcounter.infrastructure.firebase.NotificationService;
 import kr.swmaestro.dogsoundcounter.infrastructure.jpa.entities.DogSoundData;
 import kr.swmaestro.dogsoundcounter.infrastructure.jpa.entities.UserData;
 import kr.swmaestro.dogsoundcounter.infrastructure.restapi.entities.*;
@@ -32,6 +33,8 @@ public class DogDataController {
     private final UserRepository repository;
     private final DogSoundRepository dataRepository;
 
+    private final NotificationService notificationService;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     @PostMapping
     CompletableFuture<ApiResponse> post(@RequestBody DogDataInsertRequest request) {
@@ -43,7 +46,7 @@ public class DogDataController {
             final Optional<UserData> toUser = repository.findByUsername(request.getTarget());
             if(toUser.isEmpty()) return ApiResponse.error("해당 유저를 찾을 수 없습니다");
             if(fromUser.isEmpty()) return ApiResponse.error("세션이 올바르지 않습니다");
-            if(fromUser.get().getId() == toUser.get().getId()) return ApiResponse.error("자기 자신에게 등록할 수 없습니다");
+            //if(fromUser.get().getId() == toUser.get().getId()) return ApiResponse.error("자기 자신에게 등록할 수 없습니다");
 
             int price = 100;
             if(request.getContent().contains("자살")) price = 500;
@@ -54,23 +57,27 @@ public class DogDataController {
             final DogSound sound = DogSound.newInstance(toUser.get().toEntity(), fromUser.get().toEntity(), request.getContent(), Instant.now(), price);
             final DogSoundData data = dataRepository.persist(sound);
 
-            ObjectNode node = objectMapper.createObjectNode();
-            ArrayNode arr = objectMapper.createArrayNode();
-            ObjectNode embedNode = objectMapper.createObjectNode();
-            embedNode.put("title",  fromUser.get().getUsername() + " ➡️ "+toUser.get().getUsername() + " ("+price+"원)");
-            embedNode.put("description", request.getContent());
-            embedNode.put("color", 5814783);
-            embedNode.put("timestamp", data.getSpeakAt().toString());
-            arr.addPOJO(embedNode);
-            node.putIfAbsent("embeds", arr);
+            int finalPrice = price;
+            CompletableFuture.supplyAsync(()->{
+                notificationService.sendNotification(toUser.get(), finalPrice + "원어치 개소리를 하셨습니다", request.getContent());
 
-            RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-            HttpEntity<String> entity = new HttpEntity<String>(node.toString(), headers);
-            restTemplate.postForObject("https://discord.com/api/webhooks/1006474669412581436/M74xzeVNwhc6QDIvaI9sjnD4AmxRj5KHu18mR8Z1lvOE2F3UTzYe7oFkty4zyn8tA3u3", entity, String.class);
-            //System.out.println(node.toString());
+                ObjectNode node = objectMapper.createObjectNode();
+                ArrayNode arr = objectMapper.createArrayNode();
+                ObjectNode embedNode = objectMapper.createObjectNode();
+                embedNode.put("title",  fromUser.get().getUsername() + " ➡️ "+toUser.get().getUsername() + " ("+finalPrice+"원)");
+                embedNode.put("description", request.getContent());
+                embedNode.put("color", 5814783);
+                embedNode.put("timestamp", data.getSpeakAt().toString());
+                arr.addPOJO(embedNode);
+                node.putIfAbsent("embeds", arr);
+                RestTemplate restTemplate = new RestTemplate();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setContentType(MediaType.APPLICATION_JSON);
+                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+                HttpEntity<String> entity = new HttpEntity<String>(node.toString(), headers);
+                restTemplate.postForObject("https://discord.com/api/webhooks/1006474669412581436/M74xzeVNwhc6QDIvaI9sjnD4AmxRj5KHu18mR8Z1lvOE2F3UTzYe7oFkty4zyn8tA3u3", entity, String.class);
+                return null;
+            });
 
             if(data.getId() != null && data.getId() > 0)
                 return ApiResponse.succeed("성공적으로 "+price+"원짜리 개소리를 등록했습니다!");
