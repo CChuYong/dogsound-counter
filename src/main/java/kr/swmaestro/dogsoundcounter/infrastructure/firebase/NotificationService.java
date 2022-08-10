@@ -3,9 +3,7 @@ package kr.swmaestro.dogsoundcounter.infrastructure.firebase;
 import com.google.auth.oauth2.GoogleCredentials;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.messaging.FirebaseMessaging;
-import com.google.firebase.messaging.Message;
-import com.google.firebase.messaging.Notification;
+import com.google.firebase.messaging.*;
 import kr.swmaestro.dogsoundcounter.infrastructure.jpa.entities.UserData;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +25,7 @@ public class NotificationService {
         Message message = Message.builder()
                 .setNotification(Notification.builder().setTitle(title).setBody(description).build())
                 .setTopic(target.getUsername())
+                .setApnsConfig(ApnsConfig.builder().setAps(Aps.builder().setSound("default").build()).build())
                 .build();
         try {
             return FirebaseMessaging.getInstance().send(message);
