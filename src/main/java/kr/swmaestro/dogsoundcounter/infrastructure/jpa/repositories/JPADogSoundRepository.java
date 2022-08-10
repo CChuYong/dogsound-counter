@@ -10,6 +10,7 @@ import java.util.Optional;
 public interface JPADogSoundRepository extends JpaRepository<DogSoundData, Long> {
     List<DogSoundData> findAllByVictim(UserData user);
     List<DogSoundData> findAllBySpeaker(UserData user);
+    List<DogSoundData> findAllByVictimOrSpeakerOrderByIdDesc(UserData victim, UserData speaker);
     Long countByVictim(UserData user);
     Long countBySpeaker(UserData user);
     List<DogSoundData> findAllByVictimAndIdGreaterThan(UserData user, Long id);
