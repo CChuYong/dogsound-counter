@@ -7,10 +7,8 @@ import kr.swmaestro.dogsoundcounter.core.usecases.UserRepository;
 import kr.swmaestro.dogsoundcounter.infrastructure.firebase.NotificationService;
 import kr.swmaestro.dogsoundcounter.infrastructure.jpa.entities.DogSoundData;
 import kr.swmaestro.dogsoundcounter.infrastructure.jpa.entities.UserData;
-import kr.swmaestro.dogsoundcounter.infrastructure.restapi.entities.ApiResponse;
-import kr.swmaestro.dogsoundcounter.infrastructure.restapi.entities.DogDataInsertRequest;
-import kr.swmaestro.dogsoundcounter.infrastructure.restapi.entities.DogSoundMapper;
-import kr.swmaestro.dogsoundcounter.infrastructure.restapi.entities.DogSoundResponse;
+import kr.swmaestro.dogsoundcounter.infrastructure.restapi.entities.*;
+import kr.swmaestro.dogsoundcounter.util.events.EventHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -33,6 +31,7 @@ public class DogDataController {
     private final NotificationService notificationService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final EventHandler eventHandler;
 
     @PostMapping
     CompletableFuture<ApiResponse> post(@RequestBody DogDataInsertRequest request) {
@@ -46,21 +45,19 @@ public class DogDataController {
             if (toUser.isEmpty()) return ApiResponse.error("해당 유저를 찾을 수 없습니다");
             if (fromUser.isEmpty()) return ApiResponse.error("세션이 올바르지 않습니다");
 
-            int price = 100;
-            if (request.getContent().contains("자살")) price = 500;
+            DogDataInsertEvent event = new DogDataInsertEvent(fromUser.get(), toUser.get(), request.getContent(), 100);
+            eventHandler.invoke(event);
 
-            Random random = new Random();
-            if (random.nextInt(100) <= 3) price = 1000;
+            if(event.isCancelled()) return ApiResponse.error("취소되었습니다.");
 
-            final DogSound sound = DogSound.newInstance(toUser.get().toEntity(), fromUser.get().toEntity(), request.getContent(), Instant.now(), price);
+            final DogSound sound = DogSound.newInstance(event.getTo().toEntity(), event.getFrom().toEntity(), event.getContent(), Instant.now(), event.getPrice());
             final DogSoundData data = dataRepository.persist(sound);
 
-            int finalPrice = price;
             CompletableFuture
-                    .supplyAsync(() -> notificationService.sendNotification(toUser.get(), finalPrice + "원어치 개소리를 하셨습니다", request.getContent()));
+                    .supplyAsync(() -> notificationService.sendNotification(toUser.get(), event.getPrice() + "원어치 개소리를 하셨습니다", request.getContent()));
 
             if (data.getId() != null && data.getId() > 0)
-                return ApiResponse.succeed("성공적으로 " + price + "원짜리 개소리를 등록했습니다!");
+                return ApiResponse.succeed("성공적으로 " + event.getPrice() + "원짜리 개소리를 등록했습니다!");
             else
                 return ApiResponse.error("알 수 없는 이유로 등록에 실패했습니다");
         });
