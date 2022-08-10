@@ -46,7 +46,6 @@ public class DogDataController {
             final Optional<UserData> toUser = repository.findByUsername(request.getTarget());
             if(toUser.isEmpty()) return ApiResponse.error("해당 유저를 찾을 수 없습니다");
             if(fromUser.isEmpty()) return ApiResponse.error("세션이 올바르지 않습니다");
-            //if(fromUser.get().getId() == toUser.get().getId()) return ApiResponse.error("자기 자신에게 등록할 수 없습니다");
 
             int price = 100;
             if(request.getContent().contains("자살")) price = 500;
@@ -58,26 +57,8 @@ public class DogDataController {
             final DogSoundData data = dataRepository.persist(sound);
 
             int finalPrice = price;
-            CompletableFuture.supplyAsync(()->{
-                notificationService.sendNotification(toUser.get(), finalPrice + "원어치 개소리를 하셨습니다", request.getContent());
-
-                ObjectNode node = objectMapper.createObjectNode();
-                ArrayNode arr = objectMapper.createArrayNode();
-                ObjectNode embedNode = objectMapper.createObjectNode();
-                embedNode.put("title",  fromUser.get().getUsername() + " ➡️ "+toUser.get().getUsername() + " ("+finalPrice+"원)");
-                embedNode.put("description", request.getContent());
-                embedNode.put("color", 5814783);
-                embedNode.put("timestamp", data.getSpeakAt().toString());
-                arr.addPOJO(embedNode);
-                node.putIfAbsent("embeds", arr);
-                RestTemplate restTemplate = new RestTemplate();
-                HttpHeaders headers = new HttpHeaders();
-                headers.setContentType(MediaType.APPLICATION_JSON);
-                headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
-                HttpEntity<String> entity = new HttpEntity<String>(node.toString(), headers);
-                restTemplate.postForObject("https://discord.com/api/webhooks/1006474669412581436/M74xzeVNwhc6QDIvaI9sjnD4AmxRj5KHu18mR8Z1lvOE2F3UTzYe7oFkty4zyn8tA3u3", entity, String.class);
-                return null;
-            });
+            CompletableFuture
+                    .supplyAsync(()-> notificationService.sendNotification(toUser.get(), finalPrice + "원어치 개소리를 하셨습니다", request.getContent()));
 
             if(data.getId() != null && data.getId() > 0)
                 return ApiResponse.succeed("성공적으로 "+price+"원짜리 개소리를 등록했습니다!");
