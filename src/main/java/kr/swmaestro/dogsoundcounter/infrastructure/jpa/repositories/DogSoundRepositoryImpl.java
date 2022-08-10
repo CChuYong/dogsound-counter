@@ -6,6 +6,7 @@ import kr.swmaestro.dogsoundcounter.infrastructure.jpa.entities.DogSoundData;
 import kr.swmaestro.dogsoundcounter.infrastructure.jpa.entities.UserData;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Repository;
+
 import java.util.List;
 
 @Repository
@@ -34,7 +35,7 @@ public class DogSoundRepositoryImpl implements DogSoundRepository {
 
     @Override
     public List<DogSoundData> findByRelationsGreaterThan(UserData user, long id) {
-        return repository.findAllByVictimAndIdGreaterThanOrSpeakerAndIdGreaterThanOrderByIdDesc(user,id, user, id);
+        return repository.findAllByVictimAndIdGreaterThanOrSpeakerAndIdGreaterThanOrderByIdDesc(user, id, user, id);
     }
 
 }

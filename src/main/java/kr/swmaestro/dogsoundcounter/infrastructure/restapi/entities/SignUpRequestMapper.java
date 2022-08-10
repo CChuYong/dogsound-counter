@@ -9,7 +9,8 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class SignUpRequestMapper {
     private PasswordEncoder encoder;
-    public User map(SignUpRequest request){
+
+    public User map(SignUpRequest request) {
         return User.newInstance(request.getUsername(), encoder.encode(request.getPassword()));
     }
 }

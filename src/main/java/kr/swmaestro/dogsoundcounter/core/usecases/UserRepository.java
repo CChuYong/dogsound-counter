@@ -7,5 +7,6 @@ import java.util.Optional;
 
 public interface UserRepository {
     UserData persist(User user);
+
     Optional<UserData> findByUsername(String username);
 }

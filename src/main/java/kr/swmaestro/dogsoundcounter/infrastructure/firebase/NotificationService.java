@@ -13,23 +13,24 @@ import java.io.InputStream;
 
 @Service
 public class NotificationService {
-    public NotificationService() throws Exception{
+    public NotificationService() throws Exception {
         InputStream credentials = NotificationService.class.getClassLoader().getResourceAsStream("dog.json");
-        if(credentials == null) throw new RuntimeException("credentials not found");
+        if (credentials == null) throw new RuntimeException("credentials not found");
         FirebaseOptions options = new FirebaseOptions.Builder()
                 .setCredentials(GoogleCredentials.fromStream(credentials))
                 .build();
 
         FirebaseApp.initializeApp(options);
     }
-    public String sendNotification(UserData target, String title, String description){
+
+    public String sendNotification(UserData target, String title, String description) {
         Message message = Message.builder()
                 .setNotification(Notification.builder().setTitle(title).setBody(description).build())
                 .setTopic(target.getUsername())
                 .build();
-        try{
+        try {
             return FirebaseMessaging.getInstance().send(message);
-        }catch(Exception ex){
+        } catch (Exception ex) {
             ex.printStackTrace();
             return null;
         }

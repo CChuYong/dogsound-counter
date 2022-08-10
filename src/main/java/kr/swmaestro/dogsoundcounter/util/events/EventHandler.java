@@ -1,6 +1,5 @@
 package kr.swmaestro.dogsoundcounter.util.events;
 
-import kr.swmaestro.dogsoundcounter.util.events.Event;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import java.util.function.Consumer;
 
 @Component
 public class EventHandler {
-    private HashMap<Class<? extends Event>, List<Consumer<? extends Event>>> handlerList = new HashMap<>();
+    private final HashMap<Class<? extends Event>, List<Consumer<? extends Event>>> handlerList = new HashMap<>();
 
     public synchronized <T extends Event> void subscribe(Class<T> eventType, Consumer<T> handler) {
         if (!handlerList.containsKey(eventType)) {
@@ -20,10 +19,10 @@ public class EventHandler {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends Event> void invoke(T event){
+    public <T extends Event> void invoke(T event) {
         List<Consumer<? extends Event>> eventList = handlerList.get(event.getClass());
         if (eventList != null) {
-            eventList.forEach(consumer -> ((Consumer<T>)consumer).accept(event));
+            eventList.forEach(consumer -> ((Consumer<T>) consumer).accept(event));
         }
     }
 }

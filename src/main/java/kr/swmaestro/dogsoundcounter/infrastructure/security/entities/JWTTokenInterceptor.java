@@ -25,7 +25,7 @@ public class JWTTokenInterceptor extends OncePerRequestFilter {
             if (authorizationHeader != null && authorizationHeader.startsWith(TOKEN_PREFIX)) {
                 String token = authorizationHeader.substring(TOKEN_PREFIX.length());
                 try {
-                    if(TokenUtils.isValidToken(token)){
+                    if (TokenUtils.isValidToken(token)) {
                         String username = TokenUtils.getUsernameFromToken(token);
                         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(username, null, null);
                         auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

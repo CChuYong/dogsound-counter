@@ -13,6 +13,7 @@ import java.util.Collections;
 public class PrincipalDetails implements UserDetails {
     @Getter
     private User user;
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return Collections.emptyList();

@@ -2,7 +2,6 @@ package kr.swmaestro.dogsoundcounter.infrastructure.jpa.entities;
 
 import kr.swmaestro.dogsoundcounter.core.entities.DogSound;
 import kr.swmaestro.dogsoundcounter.core.entities.Identity;
-import kr.swmaestro.dogsoundcounter.core.entities.User;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -23,11 +22,11 @@ public class DogSoundData {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="speaker_id", nullable = false)
+    @JoinColumn(name = "speaker_id", nullable = false)
     private UserData speaker;
 
     @ManyToOne
-    @JoinColumn(name="victim_id", nullable = false)
+    @JoinColumn(name = "victim_id", nullable = false)
     private UserData victim;
 
     @Column(length = 1024, nullable = false)
@@ -42,7 +41,7 @@ public class DogSoundData {
     @Column(name = "price", nullable = false)
     private int price;
 
-    public static DogSoundData fromEntity(DogSound data){
+    public static DogSoundData fromEntity(DogSound data) {
         return new DogSoundData(data.getIdentity().getId(),
                 UserData.fromEntity(data.getSpeaker()),
                 UserData.fromEntity(data.getVictim()),
@@ -52,7 +51,7 @@ public class DogSoundData {
                 data.getPrice());
     }
 
-    public DogSound toEntity(){
+    public DogSound toEntity() {
         return new DogSound(new Identity(this.id),
                 speaker.toEntity(),
                 victim.toEntity(),

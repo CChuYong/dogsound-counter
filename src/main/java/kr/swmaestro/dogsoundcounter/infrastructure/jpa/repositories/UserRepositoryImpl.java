@@ -11,7 +11,7 @@ import java.util.Optional;
 public class UserRepositoryImpl implements UserRepository {
     private final JPAUserRepository repository;
 
-    public UserRepositoryImpl(JPAUserRepository repository){
+    public UserRepositoryImpl(JPAUserRepository repository) {
         this.repository = repository;
     }
 

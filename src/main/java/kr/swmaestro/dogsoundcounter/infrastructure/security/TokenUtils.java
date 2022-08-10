@@ -2,7 +2,6 @@ package kr.swmaestro.dogsoundcounter.infrastructure.security;
 
 import io.jsonwebtoken.*;
 import kr.swmaestro.dogsoundcounter.core.entities.User;
-import org.springframework.security.core.Authentication;
 
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;

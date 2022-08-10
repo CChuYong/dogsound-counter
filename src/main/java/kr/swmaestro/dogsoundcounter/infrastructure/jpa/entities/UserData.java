@@ -26,15 +26,15 @@ public class UserData {
     @Column(nullable = false)
     private String password;
 
-    public static UserData fromEntity(User user){
+    public static UserData fromEntity(User user) {
         return new UserData(
                 toIdentityValue(user.getId()),
                 user.getUsername(),
                 user.getPassword()
-                );
+        );
     }
 
-    public User toEntity(){
+    public User toEntity() {
         return new User(
                 new Identity(this.id),
                 this.username,
