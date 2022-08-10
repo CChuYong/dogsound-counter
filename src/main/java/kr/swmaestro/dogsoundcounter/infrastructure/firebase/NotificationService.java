@@ -9,11 +9,15 @@ import com.google.firebase.messaging.Notification;
 import kr.swmaestro.dogsoundcounter.infrastructure.jpa.entities.UserData;
 import org.springframework.stereotype.Service;
 
+import java.io.InputStream;
+
 @Service
 public class NotificationService {
     public NotificationService() throws Exception{
+        InputStream credentials = NotificationService.class.getClassLoader().getResourceAsStream("dog.json");
+        if(credentials == null) throw new RuntimeException("credentials not found");
         FirebaseOptions options = new FirebaseOptions.Builder()
-                .setCredentials(GoogleCredentials.fromStream(NotificationService.class.getClassLoader().getResourceAsStream("dog.json")))
+                .setCredentials(GoogleCredentials.fromStream(credentials))
                 .build();
 
         FirebaseApp.initializeApp(options);
