@@ -18,16 +18,16 @@ public class NotificationService {
 
         FirebaseApp.initializeApp(options);
     }
-    public void sendNotification(UserData target, String title, String description){
+    public String sendNotification(UserData target, String title, String description){
         Message message = Message.builder()
                 .setNotification(Notification.builder().setTitle(title).setBody(description).build())
                 .setTopic(target.getUsername())
                 .build();
         try{
-            String res = FirebaseMessaging.getInstance().send(message);
-            System.out.println(res +" to send to " + target.getUsername());
+            return FirebaseMessaging.getInstance().send(message);
         }catch(Exception ex){
             ex.printStackTrace();
+            return null;
         }
     }
 }
